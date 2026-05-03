@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 from typing import AsyncIterator
 
 import httpx
 
+from ..config import MASSIVE_TIER
 from .provider import MarketDataProvider, WatchlistSource
 
 log = logging.getLogger(__name__)
@@ -42,9 +42,7 @@ class MassiveProvider(MarketDataProvider):
     ) -> None:
         self._api_key = api_key
         self._watchlist = watchlist
-        self._interval = poll_interval or TIER_INTERVALS[
-            os.environ.get("MASSIVE_TIER", "free").lower()
-        ]
+        self._interval = poll_interval or TIER_INTERVALS[MASSIVE_TIER]
         self._client = client
         self._owns_client = client is None
 
@@ -86,6 +84,9 @@ class MassiveProvider(MarketDataProvider):
             sym: str | None = entry.get("ticker")
             if not sym:
                 continue
+            # The `or` chain treats 0 as missing (Python falsiness). That is
+            # intentional: a zero last-trade is a stale/garbage value and we
+            # prefer the day close. The post-filter below also drops <= 0.
             price = (
                 (entry.get("lastTrade") or {}).get("p")
                 or (entry.get("day") or {}).get("c")

@@ -30,11 +30,11 @@ async def stream_prices(request: Request) -> StreamingResponse:
         for tick in snap.values():
             yield _sse("price", tick.to_sse_dict())
 
-        # 2. Live updates via the broadcaster.
+        # 2. Live updates via the broadcaster. Starlette cancels this generator
+        # when the client disconnects, so an explicit disconnect check is not
+        # needed — CancelledError unwinds through the broadcaster ctx manager.
         async with service.broadcaster.subscribe() as queue:
             while True:
-                if await request.is_disconnected():
-                    return
                 try:
                     tick = await asyncio.wait_for(
                         queue.get(), timeout=HEARTBEAT_SECONDS

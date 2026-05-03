@@ -8,13 +8,7 @@ import pytest
 from app.market_data.service import MarketDataService
 from app.market_data.simulator import SimulatorProvider
 
-
-class FakeWatchlist:
-    def __init__(self, tickers: list[str]) -> None:
-        self._t = tickers
-
-    async def current_tickers(self) -> list[str]:
-        return list(self._t)
+from .conftest import FakeWatchlist
 
 
 @pytest.mark.asyncio

@@ -6,13 +6,7 @@ import pytest
 
 from app.market_data.simulator import DEFAULT_SPEC, SPECS, SimulatorProvider
 
-
-class FakeWatchlist:
-    def __init__(self, tickers: list[str]) -> None:
-        self._t = tickers
-
-    async def current_tickers(self) -> list[str]:
-        return list(self._t)
+from .conftest import FakeWatchlist
 
 
 # ---------------------------------------------------------------------------

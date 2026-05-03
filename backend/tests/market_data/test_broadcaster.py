@@ -54,25 +54,25 @@ async def test_drop_oldest_when_queue_full():
     """When a subscriber's queue is full, the oldest tick is dropped."""
     bc = PriceBroadcaster()
     async with bc.subscribe() as q:
-        # Fill the queue to capacity with distinct ticks.
+        # Fill the queue to capacity with distinct ticks (prices 0.0 .. N-1).
         ticks = [_make_tick(price=float(i)) for i in range(_QUEUE_SIZE)]
         for t in ticks:
             await bc.publish(t)
 
-        # Now publish one more — should evict the oldest and insert newest.
+        # Publish one more — should evict the oldest (price=0.0) and append.
         overflow_tick = _make_tick(price=9999.0)
         await bc.publish(overflow_tick)
 
-        # Drain the queue.
         received = []
         while not q.empty():
             received.append(q.get_nowait())
 
-    # The queue should be full again (or close) and the overflow tick present.
     prices = [t.price for t in received]
-    assert 9999.0 in prices
-    # The very first tick (price=0.0) should have been dropped.
-    assert 0.0 not in prices
+    # FIFO ordering preserved: head is now the second-oldest, tail is overflow.
+    assert prices[0] == 1.0, "drop should evict the oldest, not an arbitrary item"
+    assert prices[-1] == 9999.0, "overflow tick should be at the tail"
+    assert 0.0 not in prices, "originally-oldest tick should be evicted"
+    assert len(prices) == _QUEUE_SIZE
 
 
 @pytest.mark.asyncio
