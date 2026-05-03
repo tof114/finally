@@ -7,13 +7,7 @@ import pytest
 
 from app.market_data.massive import MassiveProvider, TIER_INTERVALS
 
-
-class FakeWatchlist:
-    def __init__(self, tickers: list[str]) -> None:
-        self._t = tickers
-
-    async def current_tickers(self) -> list[str]:
-        return list(self._t)
+from .conftest import FakeWatchlist
 
 
 SAMPLE_PAYLOAD = {

@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import math
-import os
 import random
 from dataclasses import dataclass
 from typing import AsyncIterator
 
+from ..config import SIM_STEP_SECONDS
 from .provider import MarketDataProvider, WatchlistSource
 
 # ---------------------------------------------------------------------------
@@ -38,7 +38,7 @@ SPECS: dict[str, TickerSpec] = {
     "NFLX":  TickerSpec(615.0, 0.09, 0.36, "consumer"),
 }
 
-STEP_SECONDS: float = float(os.environ.get("SIM_STEP_SECONDS", "0.5"))
+STEP_SECONDS: float = SIM_STEP_SECONDS
 SECONDS_PER_YEAR: float = 365.25 * 24 * 3600
 EVENT_PROBABILITY_PER_STEP: float = 1.0 / 600.0  # ~once every 5 min per ticker
 EVENT_MAGNITUDE_RANGE: tuple[float, float] = (0.02, 0.05)  # 2–5% jump

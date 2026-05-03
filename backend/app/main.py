@@ -4,12 +4,12 @@ import random
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 
 from .config import SIM_RANDOM_SEED
 from .market_data.factory import build_provider
 from .market_data.routes import router as market_router
 from .market_data.service import MarketDataService
+from .market_data.simulator import SimulatorProvider
 
 
 class _SimpleWatchlist:
@@ -31,12 +31,9 @@ class _SimpleWatchlist:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     watchlist = _SimpleWatchlist()
+    provider = build_provider(watchlist)
 
-    # Allow deterministic simulator via env var (useful for demos).
-    from .market_data.simulator import SimulatorProvider
-    from .market_data.factory import build_provider as _build
-
-    provider = _build(watchlist)
+    # Optional deterministic simulator for demos / debugging.
     if isinstance(provider, SimulatorProvider) and SIM_RANDOM_SEED is not None:
         provider = SimulatorProvider(watchlist, rng=random.Random(SIM_RANDOM_SEED))
 
